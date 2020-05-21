@@ -12,21 +12,18 @@ def master(id, x, ibm_cos):
     
     # 1. monitor COS bucket each X seconds
     objects = ibm_cos.list_objects(Bucket=bucket)['Contents']
+    obj2 = list()
     for obj in objects:
-        if "p_write_" in obj:
-            
-    while ("p_write_" in obj['Key'] ):            
-
-    # 2. List all "p_write_{id}" files
-        obj2 = list()
-        for obj in objects:
-            if "p_write_" in obj:
-                obj2.append(obj)
+        if "p_write_" in obj['Key']:        # 2. List all "p_write_{id}" files
+            obj2.append(obj)
+    
+    while len(obj2) > 0:    
 
     # 3. Order objects by time of creation
         #ordenat = sorted(obj2['LastModified'])
     
     # 4. Pop first object of the list "p_write_{id}"
+
     # 5. Write empty "write_{id}" object into COS
     # 6. Delete from COS "p_write_{id}", save {id} in write_permission_list
     # 7. Monitor "result.json" object each X seconds until it is updated
@@ -34,7 +31,11 @@ def master(id, x, ibm_cos):
     # 8. Back to step 1 until no "p_write_{id}" objects in the bucket
         #time.sleep(x)
         objects = ibm_cos.list_objects(Bucket=bucket)['Contents']
-    
+        obj2 = list()
+        for obj in objects:
+            if "p_write_" in obj:
+                obj2.append(obj)
+
     return write_permission_list
 
 
