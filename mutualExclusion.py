@@ -1,6 +1,7 @@
 import pywren_ibm_cloud as pywren
 import os
 import pickle
+import time
 
 bucket = "sd-python"
 
@@ -25,14 +26,26 @@ def slave(id, x, ibm_cos):
     f = open("p_write_"+str(id), "w")
     fSer = pickle.dumps(f)
     ibm_cos.put_object(Bucket=bucket, Key="p_write_"+str(id), Body=fSer)
+
     # 2. Monitor COS bucket each X seconds until it finds a file called "write_{id}"
+    objects = ibm_cos.list_objects(bucket_name=bucket)
+    while ("write_"+str(id) not in objects):
+        objects = ibm_cos.list_objects(bucket_name=bucket)
+        time.sleep(x)
+    
     # 3. If write_{id} is in COS: get result.txt, append {id}, and put back to COS result.txt
+    resultSer = ibm_cos.get_object(Bucket=bucket, Key='result.txt')['Body'].read()
+    result = pickle.loads(resultSer)
+    result.append(str(id))
+    resultSer = pickle.dumps(result)
+    ibm_cos.put_object(Bucket=bucket, Key="result.txt", Body=resultSer)
+    
     # 4. Finish
     # No need to return anything
 
 
 if __name__ == '__main__':
-    
+
     pw = pywren.ibm_cf_executor()
     pw.call_async(master, 0)
     pw.map(slave, range(N_SLAVES))
