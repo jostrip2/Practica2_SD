@@ -13,11 +13,11 @@ def master(id, x, ibm_cos):
     objects = ibm_cos.list_objects(Bucket=bucket)['Contents']
     obj2 = list()
     for obj in objects:
-        if "p_write_" in obj['Key']:        # List all "p_write_{id}" files
+        if "p_write_" in obj['Key']:                                    # List all "p_write_{id}" files
             obj2.append(obj)
     
-    while len(obj2) > 0:                    # until no "p_write_{id}" objects in the bucket
-        obj2.sort(key=lambda k: k['LastModified'], reverse=True)      # Order objects by time of creation
+    while len(obj2) > 0:                                                # until no "p_write_{id}" objects in the bucket
+        obj2.sort(key=lambda k: k['LastModified'], reverse=True)        # Order objects by time of creation
     
         elem = obj2.pop(0)                                              # Pop first object of the list "p_write_{id}"
         idElem = elem['Key'][9:]
