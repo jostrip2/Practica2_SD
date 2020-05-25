@@ -4,7 +4,7 @@ import time
 
 BUCKET_NAME = "sd-python"
 
-N_SLAVES = 10
+N_SLAVES = 50
 
 def master(id, x, ibm_cos):
     write_permission_list = []
@@ -86,9 +86,9 @@ if __name__ == '__main__':
 
         # check if content of result.json == write_permission_list
         ok = True
-        print("\nResult\tWrite_permission")
+        print("\nResult:\t\t\t"+str(result))
+        print("Write permission:\t"+str(write_permission_list))
         for i in range(len(result)):
-            print(result[i]+"\t"+write_permission_list[i])
             if result[i] != write_permission_list[i]:
                 ok = False
         if ok: print("\nL'ordre és correcte\n")
