@@ -4,7 +4,7 @@ import time
 
 BUCKET_NAME = "sd-python"
 
-N_SLAVES = 50
+N_SLAVES = 5
 
 def master(id, x, ibm_cos):
     write_permission_list = []
@@ -16,8 +16,8 @@ def master(id, x, ibm_cos):
         try:
             objects = ibm_cos.list_objects(Bucket=BUCKET_NAME, Prefix="p_write")['Contents']
         except:
-            pass        
-
+            time.sleep(x)
+                    
     temps = ibm_cos.get_object(Bucket=BUCKET_NAME, Key="result.json")['LastModified']
 
     while len(objects) != 0:                                                               # until no "p_write_{id}" objects in the bucket      
@@ -25,12 +25,12 @@ def master(id, x, ibm_cos):
         
         idElem = objects.pop(0)['Key'][8:]                                                 # Pop first object of the list "p_write_{id}"                                          
         
-        ibm_cos.put_object(Bucket=BUCKET_NAME, Key="write_"+idElem, Body=json.dumps(""))     # Write empty "write_{id}" object into COS
+        ibm_cos.put_object(Bucket=BUCKET_NAME, Key="write_"+idElem, Body=json.dumps(""))   # Write empty "write_{id}" object into COS
 
-        ibm_cos.delete_object(Bucket=BUCKET_NAME, Key="p_write_"+idElem)                     # Delete from COS "p_write_{id}"
-        write_permission_list.append(idElem)                                            # save {id} in write_permission_list
+        ibm_cos.delete_object(Bucket=BUCKET_NAME, Key="p_write_"+idElem)                   # Delete from COS "p_write_{id}"
+        write_permission_list.append(idElem)                                               # save {id} in write_permission_list
         
-        temps2 = ibm_cos.get_object(Bucket=BUCKET_NAME, Key="result.json")['LastModified']   # Monitor "result.json" object each X seconds until it is updated
+        temps2 = ibm_cos.get_object(Bucket=BUCKET_NAME, Key="result.json")['LastModified'] # Monitor "result.json" object each X seconds until it is updated
         while(temps == temps2):
             time.sleep(x)
             temps2 = ibm_cos.get_object(Bucket=BUCKET_NAME, Key="result.json")['LastModified']
@@ -38,12 +38,11 @@ def master(id, x, ibm_cos):
         
         ibm_cos.delete_object(Bucket=BUCKET_NAME, Key="write_"+idElem)                       # Delete from COS “write_{id}”
                 
-        time.sleep(x)
         try:
             objects = ibm_cos.list_objects(Bucket=BUCKET_NAME, Prefix="p_write")['Contents']
         except:
-            pass
-    
+            time.sleep(x)
+            
     return write_permission_list
 
 
@@ -57,10 +56,9 @@ def slave(id, x, ibm_cos):
         try:
             _ = ibm_cos.get_object(Bucket=BUCKET_NAME, Key="write_"+str(id))
         except:
-            pass
+            time.sleep(x)
         else:
             break
-        time.sleep(x)
 
     # If write_{id} is in COS:
     result = ibm_cos.get_object(Bucket=BUCKET_NAME, Key='result.json')['Body'].read()   # get result.json
