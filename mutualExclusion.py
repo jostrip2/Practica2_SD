@@ -4,7 +4,7 @@ import time
 
 BUCKET_NAME = "sd-python"
 
-N_SLAVES = 5
+N_SLAVES = 50
 
 def master(id, x, ibm_cos):
     write_permission_list = []
@@ -37,11 +37,12 @@ def master(id, x, ibm_cos):
         temps = temps2
         
         ibm_cos.delete_object(Bucket=BUCKET_NAME, Key="write_"+idElem)                       # Delete from COS “write_{id}”
-                
-        try:
-            objects = ibm_cos.list_objects(Bucket=BUCKET_NAME, Prefix="p_write")['Contents']
-        except:
-            time.sleep(x)
+        
+        if len(objects) == 0:
+            try:
+                objects = ibm_cos.list_objects(Bucket=BUCKET_NAME, Prefix="p_write")['Contents']
+            except:
+                time.sleep(x)
             
     return write_permission_list
 
