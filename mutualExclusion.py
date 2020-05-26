@@ -4,7 +4,7 @@ import time
 
 BUCKET_NAME = "sd-python"
 
-N_SLAVES = 50
+N_SLAVES = 2
 
 def master(id, x, ibm_cos):
     write_permission_list = []
@@ -75,8 +75,13 @@ if __name__ == '__main__':
     if N_SLAVES <= 100:
         pw = pywren.ibm_cf_executor()
         ibm_cos = pw.internal_storage.get_client()
-        pw.call_async(master, 0)
-        pw.map(slave, range(N_SLAVES))
+        
+        espera=[]
+        for _ in range(N_SLAVES):
+            espera.append(1)
+
+        pw.call_async(master, 1)
+        pw.map(slave, espera)
         write_permission_list = pw.get_result()[0]
         pw.clean()
 
@@ -85,8 +90,10 @@ if __name__ == '__main__':
 
         # check if content of result.json == write_permission_list
         ok = True
-        print("\nResult:\t\t\t"+str(result))
-        print("Write permission:\t"+str(write_permission_list))
+        print("\nResult:")
+        print(result)
+        print("Write permission:")
+        print(write_permission_list)
         for i in range(len(result)):
             if result[i] != write_permission_list[i]:
                 ok = False
@@ -94,6 +101,3 @@ if __name__ == '__main__':
         else: print("\nL'ordre NO és correcte\n")
     
     else: print("El nombre d'esclaus ha de ser inferior o igual a 100.")
-
-
-
